@@ -1,0 +1,25 @@
+# Checklist
+
+- [ ] Package renamed
+- [ ] Namespace renamed
+- [ ] Provider class renamed
+- [ ] API URL configured
+- [ ] Authentication implemented
+- [ ] Cost calculation implemented
+- [ ] Address mapping implemented
+- [ ] Product mapping implemented
+- [ ] Weight mapping implemented
+- [ ] Dimensions mapping implemented
+- [ ] Shipment enabled if required
+- [ ] Create shipment implemented
+- [ ] Tracking implemented
+- [ ] Cancel implemented
+- [ ] Webhook implemented
+- [ ] Status mapping implemented
+- [ ] Secrets protected
+- [ ] Manager UI implemented if required
+- [ ] PHPUnit
+- [ ] PHPStan
+- [ ] Build successful
+- [ ] MODX installation tested
+- [ ] MiniShop3 integration tested

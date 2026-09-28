@@ -1,0 +1,15 @@
+{
+    "name": "ibochkarev/msp3deliveryskeleton",
+    "description": "MiniShop3 delivery extra skeleton",
+    "type": "modx-component",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.2",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ibochkarev\\Msp3DeliverySkeleton\\": "src/"
+        }
+    }
+}

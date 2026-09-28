@@ -1,0 +1,8 @@
+{
+  "status": "in_transit",
+  "order_id": 15,
+  "external_id": "ext-1",
+  "tracking_number": "TRK-1",
+  "event_id": "evt-1",
+  "carrier": "skeleton"
+}

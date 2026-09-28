@@ -1,0 +1,11 @@
+parameters:
+    level: 6
+    paths:
+        - core/components/msp3deliveryskeleton/src
+        - bin
+    scanFiles:
+        - tests/Stubs/minishop3.php
+    excludePaths:
+        - vendor
+        - tests/Generator
+    treatPhpDocTypesAsCertain: false

@@ -49,6 +49,12 @@ final class GeneratorTest extends TestCase
         Msp3DeliverySkeletonGenerator::parseArgv(['init.php', '--foo=1']);
     }
 
+    public function testParseNoEncryptFlag(): void
+    {
+        $opts = Msp3DeliverySkeletonGenerator::parseArgv(['init.php', '--name=msp3Cdek', '--no-encrypt']);
+        self::assertTrue($opts['no-encrypt']);
+    }
+
     public function testGenerateDefaultAndAllKeeps(): void
     {
         $default = $this->generate('msp3Cdek', 'Cdek', '');
@@ -65,6 +71,9 @@ final class GeneratorTest extends TestCase
         self::assertStringNotContainsString('ShipmentProviderInterface', $delivery);
         self::assertStringNotContainsString('SkeletonDelivery', $delivery);
         self::assertStringContainsString('Ibochkarev\\Msp3Cdek', $delivery);
+        self::assertFileExists($default . '/_build/resolvers/resolve.encryption.php');
+        $defaultConfig = (string) file_get_contents($default . '/_build/config.inc.php');
+        self::assertStringContainsString('$encryptEnabled = true;', $defaultConfig);
         $this->assertNoLeaks($default);
 
         $full = $this->generate('msp3Cdek', 'Cdek', 'shipment,webhook,manager');
@@ -72,6 +81,17 @@ final class GeneratorTest extends TestCase
         self::assertFileExists($full . '/core/components/msp3cdek/src/Webhook/WebhookParser.php');
         self::assertFileExists($full . '/assets/components/msp3cdek/js/mgr/order-tab.js');
         $this->assertNoLeaks($full);
+
+        $open = $this->generate('msp3Cdek', 'Cdek', '', true);
+        $config = (string) file_get_contents($open . '/_build/config.inc.php');
+        self::assertStringContainsString('$encryptEnabled = false;', $config);
+        self::assertFileExists($open . '/core/components/msp3cdek/src/Transport/EncryptedVehicle.php');
+        self::assertFileExists($open . '/_build/resolvers/resolve.encryption.php');
+        $vehicle = (string) file_get_contents($open . '/core/components/msp3cdek/src/Transport/EncryptedVehicle.php');
+        self::assertStringContainsString('namespace Ibochkarev\\Msp3Cdek\\Transport;', $vehicle);
+        $resolver = (string) file_get_contents($open . '/_build/resolvers/resolve.encryption.php');
+        self::assertStringContainsString("define('COMPONENT_NAME', 'msp3cdek')", $resolver);
+        $this->assertNoLeaks($open);
     }
 
     public function testRejectsSecondInit(): void
@@ -85,7 +105,7 @@ final class GeneratorTest extends TestCase
         ]))->run();
     }
 
-    private function generate(string $name, string $provider, string $keep): string
+    private function generate(string $name, string $provider, string $keep, bool $noEncrypt = false): string
     {
         $target = sys_get_temp_dir() . '/msp3ds-' . bin2hex(random_bytes(4));
         $this->copyTree(dirname(__DIR__, 2), $target);
@@ -96,6 +116,9 @@ final class GeneratorTest extends TestCase
         ];
         if ($keep !== '') {
             $opts['keep'] = $keep;
+        }
+        if ($noEncrypt) {
+            $opts['no-encrypt'] = true;
         }
         (new Msp3DeliverySkeletonGenerator($target, $opts))->run();
 

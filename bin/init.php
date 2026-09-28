@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Rename msp3DeliverySkeleton into a new extra.
  *
- * php bin/init.php --name=msp3Cdek --provider=Cdek [--keep=shipment,webhook,manager]
+ * php bin/init.php --name=msp3Cdek --provider=Cdek [--keep=shipment,webhook,manager] [--no-encrypt]
  */
 
 require_once __DIR__ . '/Generator.php';

@@ -74,6 +74,7 @@ php bin/init.php --name=msp3Cdek --provider=Cdek
 php bin/init.php --name=msp3Cdek --provider=Cdek --keep=shipment
 php bin/init.php --name=msp3Cdek --provider=Cdek --keep=shipment,webhook,manager
 php bin/init.php --name=msp3Cdek --provider=Cdek --vendor=Ibochkarev --skip-checks
+php bin/init.php --name=msp3Cdek --provider=Cdek --no-encrypt
 ```
 
 `--name` только в форме `msp3Cdek`, `msp3RussianPost`, `msp3YandexDelivery`. Не пройдут `Cdek`, `ms3Cdek`, `msp3-cdek`.
@@ -83,6 +84,8 @@ php bin/init.php --name=msp3Cdek --provider=Cdek --vendor=Ibochkarev --skip-chec
 `--keep=manager` автоматически включает `shipment`.
 
 `--skip-checks` пропускает `composer test` после генерации.
+
+`--no-encrypt` ставит `$encryptEnabled = false` в `_build/config.inc.php`. Нужен, если extra не регистрируют в [modstore.pro](https://modstore.pro/info/api).
 
 ## Example
 
@@ -144,6 +147,16 @@ MiniShop3 создаёт handler так: `new $class($ms3, [])`. Настрой�
 
 ## Build
 
+По умолчанию категория пакета шифруется через `EncryptedVehicle` и ключ с [modstore.pro](https://modstore.pro/info/api). Resolver: [`_build/resolvers/resolve.encryption.php`](_build/resolvers/resolve.encryption.php).
+
+Локальная сборка без лицензии:
+
+```bash
+ENCRYPT=0 php _build/build.php
+```
+
+Для каталога modstore:
+
 ```bash
 php _build/build.php
 ```
@@ -176,7 +189,7 @@ MS3_SRC=../MiniShop3/core/components/minishop3/src composer test
 5. При необходимости `--keep=shipment` и методы `SkeletonShipment`
 6. Маппинг статусов в `StatusMap`
 7. Webhook в `WebhookParser`
-8. Тесты и `php _build/build.php`
+8. Тесты и `ENCRYPT=0 php _build/build.php`
 
 Полный чеклист: [docs/CHECKLIST.md](docs/CHECKLIST.md). Портирование: [docs/PROVIDER-PORTING.md](docs/PROVIDER-PORTING.md).
 
@@ -192,6 +205,7 @@ msp3DeliverySkeleton/
 │   ├── Delivery/SkeletonDelivery.php
 │   ├── Shipment/
 │   ├── Service/
+│   ├── Transport/
 │   └── Webhook/
 └── assets/components/msp3deliveryskeleton/
 ```

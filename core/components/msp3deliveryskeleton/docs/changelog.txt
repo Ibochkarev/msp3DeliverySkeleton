@@ -1,3 +1,4 @@
 1.0.0-beta
 ==============
 - Initial skeleton for MiniShop3 delivery extras.
+- EncryptedVehicle + resolve.encryption.php (modstore.pro). Local builds: ENCRYPT=0.

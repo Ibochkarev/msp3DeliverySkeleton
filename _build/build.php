@@ -6,6 +6,8 @@ use MODX\Revolution\modPluginEvent;
 use MODX\Revolution\modSystemSetting;
 use MODX\Revolution\modX;
 use MODX\Revolution\Transport\modPackageBuilder;
+use xPDO\Transport\xPDOFileVehicle;
+use xPDO\Transport\xPDOScriptVehicle;
 use xPDO\Transport\xPDOTransport;
 
 class Msp3DeliverySkeletonPackage
@@ -43,6 +45,8 @@ class Msp3DeliverySkeletonPackage
 
     public function process(): modPackageBuilder
     {
+        $this->encryptionSetup();
+
         $elements = scandir($this->config['elements']);
         foreach ($elements as $element) {
             if (in_array($element[0], ['_', '.'], true)) {
@@ -73,12 +77,23 @@ class Msp3DeliverySkeletonPackage
         );
         sort($resolvers);
         foreach ($resolvers as $resolver) {
+            if ($resolver === 'resolve.encryption.php') {
+                continue;
+            }
             if ($vehicle->resolve('php', ['source' => $this->config['resolvers'] . $resolver])) {
                 $this->modx->log(modX::LOG_LEVEL_INFO, 'Added resolver ' . preg_replace('#\.php$#', '', $resolver));
             }
         }
 
         $this->builder->putVehicle($vehicle);
+
+        if (!empty($this->config['encrypt'])) {
+            $this->builder->putVehicle($this->builder->createVehicle(
+                ['source' => $this->config['resolvers'] . 'resolve.encryption.php'],
+                ['vehicle_class' => xPDOScriptVehicle::class]
+            ));
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added encryption resolver (for uninstall)');
+        }
         $this->builder->setPackageAttributes([
             'changelog' => $this->readDocFile('changelog.txt'),
             'license' => $this->readDocFile('license.txt'),
@@ -134,6 +149,56 @@ class Msp3DeliverySkeletonPackage
                 ],
             ],
         ];
+    }
+
+    /**
+     * EncryptedVehicle + resolve.encryption.php, same path as msp3PaymentSkeleton.
+     * encrypt=true talks to modstore.pro. Local builds: ENCRYPT=0 php _build/build.php
+     */
+    private function encryptionSetup(): void
+    {
+        if (empty($this->config['encrypt'])) {
+            $this->modx->log(modX::LOG_LEVEL_INFO, '[msp3DeliverySkeleton] Encryption disabled (local build).');
+
+            return;
+        }
+
+        $this->modx->log(modX::LOG_LEVEL_INFO, '[msp3DeliverySkeleton] Encryption enabled.');
+
+        require_once $this->config['core'] . 'src/Transport/EncryptedVehicle.php';
+
+        $this->builder->package->put(
+            [
+                'source' => $this->config['core'] . 'src/Transport/EncryptedVehicle.php',
+                'target' => "return MODX_CORE_PATH . 'components/" . $this->config['name_lower'] . "/Transport/';",
+            ],
+            [
+                'vehicle_class' => xPDOFileVehicle::class,
+                xPDOTransport::UNINSTALL_FILES => false,
+            ]
+        );
+        $this->modx->log(modX::LOG_LEVEL_INFO, 'Added EncryptedVehicle class to package');
+
+        $this->builder->package->put(
+            [
+                'source' => $this->config['core'] . 'src/Transport/encryptedvehicle.class.php',
+                'target' => "return MODX_CORE_PATH . 'model/" . $this->config['name_lower'] . "/transport/';",
+            ],
+            [
+                'vehicle_class' => xPDOFileVehicle::class,
+                xPDOTransport::UNINSTALL_FILES => false,
+            ]
+        );
+        $this->modx->log(modX::LOG_LEVEL_INFO, 'Added EncryptedVehicle compatibility class to core/model');
+
+        $this->builder->putVehicle($this->builder->createVehicle(
+            ['source' => $this->config['resolvers'] . 'resolve.encryption.php'],
+            ['vehicle_class' => xPDOScriptVehicle::class]
+        ));
+        $this->modx->log(modX::LOG_LEVEL_INFO, 'Added encryption resolver');
+
+        $this->category_attributes['vehicle_class'] = 'Ibochkarev\\Msp3DeliverySkeleton\\Transport\\EncryptedVehicle';
+        $this->category_attributes[xPDOTransport::ABORT_INSTALL_ON_VEHICLE_FAIL] = true;
     }
 
     private function settings(): void

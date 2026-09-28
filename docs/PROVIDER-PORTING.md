@@ -99,7 +99,7 @@ composer lint
 ## 11. Build
 
 ```bash
-php _build/build.php
+ENCRYPT=0 php _build/build.php
 ```
 
 Установите transport в MODX, активируйте способ доставки, проверьте checkout.

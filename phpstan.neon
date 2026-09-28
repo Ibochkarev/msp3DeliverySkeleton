@@ -8,4 +8,5 @@ parameters:
     excludePaths:
         - vendor
         - tests/Generator
+        - core/components/msp3deliveryskeleton/src/Transport
     treatPhpDocTypesAsCertain: false

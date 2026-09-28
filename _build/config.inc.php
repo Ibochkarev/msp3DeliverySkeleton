@@ -12,6 +12,13 @@ if (!defined('MODX_CORE_PATH')) {
     }
 }
 
+$encrypt = getenv('ENCRYPT');
+if ($encrypt === false || $encrypt === '') {
+    $encryptEnabled = true;
+} else {
+    $encryptEnabled = !in_array(strtolower((string) $encrypt), ['0', 'false', 'no', 'off'], true);
+}
+
 return [
     'name' => 'msp3DeliverySkeleton',
     'name_lower' => 'msp3deliveryskeleton',
@@ -25,4 +32,6 @@ return [
     'log_level' => !empty($_REQUEST['download']) ? 0 : 3,
     'log_target' => getenv('BUILD_LOG') ? getenv('BUILD_LOG') : (php_sapi_name() === 'cli' ? 'ECHO' : 'HTML'),
     'download' => !empty($_REQUEST['download']),
+    // true — только если пакет в каталоге modstore.pro с поддержкой encode. Локально: ENCRYPT=0.
+    'encrypt' => $encryptEnabled,
 ];

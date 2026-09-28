@@ -20,6 +20,7 @@
 - [ ] Manager UI implemented if required
 - [ ] PHPUnit
 - [ ] PHPStan
+- [ ] `ENCRYPT=0 php _build/build.php` (локально) или шифрованный билд с ключом modstore
 - [ ] Build successful
 - [ ] MODX installation tested
 - [ ] MiniShop3 integration tested

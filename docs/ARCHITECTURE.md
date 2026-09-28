@@ -82,3 +82,5 @@ Guzzle берётся из ядра MODX 3. Свой composer vendor в transpor
 ## Build
 
 `_build/build.php` собирает category, plugin `OnMODXInit`, system settings, file vehicles и resolvers. Resolver доставки создаёт неактивный `msDelivery` с FQCN handler. Если FQCN длиннее колонки `class`, resolver пишет ошибку в лог и строку не создаёт.
+
+При `encrypt => true` (дефолт) категория уходит в `EncryptedVehicle`. Ключ берётся у modstore.pro. Resolver [`resolve.encryption.php`](../_build/resolvers/resolve.encryption.php) грузит класс на install/upgrade/uninstall. Локально: `ENCRYPT=0 php _build/build.php` или `php bin/init.php --no-encrypt`.

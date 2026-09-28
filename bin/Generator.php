@@ -8,7 +8,7 @@ final class Msp3DeliverySkeletonGenerator
     public const PROVIDER_PATTERN = '/^[A-Z][A-Za-z0-9]+$/';
     public const VENDOR_PATTERN = '/^[A-Z][A-Za-z0-9]+$/';
     public const ALLOWED_KEEP = ['shipment', 'webhook', 'manager'];
-    private const ALLOWED_FLAGS = ['name', 'provider', 'vendor', 'keep', 'skip-checks'];
+    private const ALLOWED_FLAGS = ['name', 'provider', 'vendor', 'keep', 'skip-checks', 'no-encrypt'];
 
     /**
      * @param array<string, mixed> $options
@@ -115,7 +115,7 @@ final class Msp3DeliverySkeletonGenerator
         $vendor = (string) ($this->options['vendor'] ?? 'Ibochkarev');
         if ($name === '' || $provider === '') {
             throw new InvalidArgumentException(
-                'Usage: php bin/init.php --name=msp3Cdek --provider=Cdek [--keep=shipment,webhook,manager]'
+                'Usage: php bin/init.php --name=msp3Cdek --provider=Cdek [--keep=shipment,webhook,manager] [--no-encrypt]'
             );
         }
         if (!self::isValidName($name)) {
@@ -143,6 +143,7 @@ final class Msp3DeliverySkeletonGenerator
         $this->stripInitBlocks(array_values(array_diff(self::ALLOWED_KEEP, $keep)));
         $this->replaceTokens(self::replacements($name, $provider, $vendor));
         $this->renamePaths(self::replacements($name, $provider, $vendor));
+        $this->applyNoEncryptFlag();
         $this->writeGeneratedReadme($name, $provider, $vendor, $keep);
 
         if (empty($this->options['skip-cleanup'])) {
@@ -160,7 +161,7 @@ final class Msp3DeliverySkeletonGenerator
             $this->runChecks();
         }
 
-        echo "Done. Fill // PROVIDER: markers, then php _build/build.php\n";
+        echo "Done. Fill // PROVIDER: markers, then ENCRYPT=0 php _build/build.php for a local unencrypted zip.\n";
 
         return 0;
     }
@@ -246,6 +247,23 @@ final class Msp3DeliverySkeletonGenerator
                 file_put_contents($file, $updated);
             }
         }
+    }
+
+    private function applyNoEncryptFlag(): void
+    {
+        if (!isset($this->options['no-encrypt'])) {
+            return;
+        }
+        $config = $this->root . '/_build/config.inc.php';
+        if (!is_file($config)) {
+            throw new RuntimeException('Missing _build/config.inc.php');
+        }
+        $src = (string) file_get_contents($config);
+        $updated = preg_replace('/\$encryptEnabled = true;/', '$encryptEnabled = false;', $src, 1);
+        if (!is_string($updated) || $updated === $src) {
+            throw new RuntimeException('Could not disable encryption in _build/config.inc.php');
+        }
+        file_put_contents($config, $updated);
     }
 
     /**

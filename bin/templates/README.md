@@ -20,6 +20,14 @@ Search the code for `// PROVIDER:` and implement the carrier API.
 
 ## Build
 
+Local unencrypted zip:
+
+```bash
+ENCRYPT=0 php _build/build.php
+```
+
+Encrypted modstore build (default, needs provider credentials):
+
 ```bash
 php _build/build.php
 ```

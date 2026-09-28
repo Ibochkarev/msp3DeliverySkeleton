@@ -1,4 +1,34 @@
-1.0.0-beta
-==============
-- Initial skeleton for MiniShop3 delivery extras.
-- EncryptedVehicle + resolve.encryption.php (modstore.pro). Local builds: ENCRYPT=0.
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0-beta] - 2026-09-28
+
+Первый публичный релиз образца msp3DeliverySkeleton для MODX 3 и MiniShop3.
+
+### Added
+
+- Каркас доставки: `Delivery` + `getCost()`. Опционально `ShipmentProviderInterface` и `SkeletonShipment`. Статус отправления меняет `ShipmentLifecycleService`. Провайдер не пишет `status_id`.
+- Скрипт `bin/init.php`: имя пакета, провайдер, опции `--keep=shipment,webhook,manager`, `--no-encrypt`, `--skip-checks`. `--keep=manager` включает `shipment`.
+- Webhook только через роут ядра MiniShop3: `POST /api/v1/delivery/webhook/{delivery_id}`. Свой endpoint пакет не ставит.
+- Вкладка заказа через `MS3OrderTabsRegistry`: create, cancel, sync. Вкладку ядра `ms3_shipment` не дублирует.
+- Секреты сначала в `msDelivery.properties`, иначе системные настройки. Пустое свойство не перекрывает setting. Блоки `// PROVIDER:` в `ApiClient`, `Signature`, `WebhookParser`, `SkeletonDelivery`, `SkeletonShipment`, `StatusMap`, `OrderData`.
+- Транспорт `EncryptedVehicle` для modstore.pro. Локальная сборка: `ENCRYPT=0`.
+- HTTP через PSR-18 (`$modx->services`). PHPUnit 11, PHPStan 2, PHP CS Fixer. Лексиконы ru и en.
+
+### Fixed
+
+- `getCost()` ловит `Throwable` и падает в `parent::getCost()`, если API не настроен или ответил ошибкой.
+- `OrderData` кэширует адрес и товары заказа, чтобы handler не читал их дважды.
+- `SkeletonShipment::create()` пишет `external_id` и `carrier` только через `applyProviderEvent()`.
+- Действия manager проверяют `services->has('ms3_shipment_lifecycle')` до `get()`. Иначе контейнер бросает исключение.
+- Resolver доставки не создаёт `msDelivery`, если FQCN длиннее колонки `class`.
+- Webhook принимает только whitelist полей. `label_url` только `http` / `https`. Колонки `label_url` в `ms3_shipments` нет: ссылка в `meta`.
+- `maskSecret()` не показывает начало ключа. При длине ≥ 12 видны только последние 4 символа.
+
+### Dependencies
+
+- MODX >= 3.0.3, MiniShop3 >= 1.14.0-beta1, PHP >= 8.2.
